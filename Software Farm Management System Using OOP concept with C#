@@ -1,0 +1,431 @@
+using System;
+using System.Collections.Generic;
+
+#region Abstract Class and Interfaces
+
+// Abstract class for common entity behavior
+public abstract class Entity
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public Entity(int id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    public abstract void DisplayInfo(); // Abstract method
+}
+
+#endregion
+
+#region Classes
+
+// Project Class
+public class Project : Entity
+{
+    public string Deadline { get; set; }
+    public Client AssignedClient { get; set; }
+    public bool IsCompleted { get; set; }
+    public double Budget { get; set; } // New property for project budget
+
+    public Project(int id, string name, string deadline, Client client, double budget)
+        : base(id, name)
+    {
+        Deadline = deadline;
+        AssignedClient = client;
+        IsCompleted = false;
+        Budget = budget; // Initialize budget
+    }
+
+    public void MarkAsCompleted()
+    {
+        IsCompleted = true;
+    }
+
+    public override void DisplayInfo()
+    {
+        Console.WriteLine($"  Project ID: {Id}, Name: {Name}, Deadline: {Deadline}, Budget: ${Budget}, Client: {AssignedClient.Name}, Completed: {IsCompleted}");
+    }
+}
+
+// Employee Class
+public class Employee : Entity
+{
+    public string Role { get; set; }
+
+    public Employee(int id, string name, string role)
+        : base(id, name)
+    {
+        Role = role;
+    }
+
+    public override void DisplayInfo()
+    {
+        Console.WriteLine($"  Employee ID: {Id}, Name: {Name}, Role: {Role}");
+    }
+}
+
+// Client Class
+public class Client : Entity
+{
+    public string ContactInfo { get; set; }
+
+    public Client(int id, string name, string contactInfo)
+        : base(id, name)
+    {
+        ContactInfo = contactInfo;
+    }
+
+    public override void DisplayInfo()
+    {
+        Console.WriteLine($"  Client ID: {Id}, Name: {Name}, Contact: {ContactInfo}");
+    }
+}
+
+// Billing Class - To generate invoices
+namespace BillingSystem
+{
+    class Billing
+    {
+        private string clientName;
+        private string projectName;
+        private double price;
+        private string date;
+
+        public Billing(string clientName, string projectName, double price, string date)
+        {
+            this.clientName = clientName;
+            this.projectName = projectName;
+            this.price = price;
+            this.date = date;
+        }
+
+        public void GenerateInvoice()
+        {
+            Console.Clear();
+            Console.WriteLine("  |-----------------------------------------------------------|");
+            Console.WriteLine("  |\t\tPROJECT MANAGEMENT INVOICE\t\t|");
+            Console.WriteLine("  |-----------------------------------------------------------|");
+            Console.WriteLine("  | SN\t|DATE\t\t|CLIENT NAME \t|PROJECT\t|PRICE");
+            Console.WriteLine("  |-----------------------------------------------------------|");
+
+            Console.WriteLine($"  | {1}\t|{date}\t|{clientName}\t\t|{projectName}\t\t|${price}");
+            Console.WriteLine("  |-----------------------------------------------------------|");
+        }
+    }
+}
+
+#endregion
+
+#region SoftwareFarm Class
+
+public class SoftwareFarm
+{
+    private List<Project> Projects = new List<Project>();
+    private List<Employee> Employees = new List<Employee>();
+    private List<Client> Clients = new List<Client>();
+
+    // Project Management
+    public void AddProject(Project project)
+    {
+        Projects.Add(project);
+        Console.WriteLine($"  Project '{project.Name}' added successfully.");
+    }
+
+    public void EditProject(int id, string name, string deadline, Client client, double budget)
+    {
+        var project = Projects.Find(p => p.Id == id);
+        if (project != null)
+        {
+            project.Name = name;
+            project.Deadline = deadline;
+            project.AssignedClient = client;
+            project.Budget = budget;
+            Console.WriteLine($"  Project ID {id} updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"  Project ID {id} not found.");
+        }
+    }
+
+    public void RemoveProject(int id)
+    {
+        Projects.RemoveAll(p => p.Id == id);
+        Console.WriteLine($"  Project ID {id} removed.");
+    }
+
+    // Employee Management
+    public void AddEmployee(Employee employee)
+    {
+        Employees.Add(employee);
+        Console.WriteLine($"  Employee '{employee.Name}' added successfully.");
+    }
+
+    public void EditEmployee(int id, string name, string role)
+    {
+        var employee = Employees.Find(e => e.Id == id);
+        if (employee != null)
+        {
+            employee.Name = name;
+            employee.Role = role;
+            Console.WriteLine($"  Employee ID {id} updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"  Employee ID {id} not found.");
+        }
+    }
+
+    public void RemoveEmployee(int id)
+    {
+        Employees.RemoveAll(e => e.Id == id);
+        Console.WriteLine($"  Employee ID {id} removed.");
+    }
+
+    // Client Management
+    public void AddClient(Client client)
+    {
+        Clients.Add(client);
+        Console.WriteLine($"  Client '{client.Name}' added successfully.");
+    }
+
+    public void EditClient(int id, string name, string contactInfo)
+    {
+        var client = Clients.Find(c => c.Id == id);
+        if (client != null)
+        {
+            client.Name = name;
+            client.ContactInfo = contactInfo;
+            Console.WriteLine($"  Client ID {id} updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"  Client ID {id} not found.");
+        }
+    }
+
+    public void RemoveClient(int id)
+    {
+        Clients.RemoveAll(c => c.Id == id);
+        Console.WriteLine($"  Client ID {id} removed.");
+    }
+
+    // Project Completion and Billing
+    public void MarkProjectAsCompleted(int projectId)
+    {
+        var project = Projects.Find(p => p.Id == projectId);
+        if (project != null)
+        {
+            project.MarkAsCompleted();
+            Console.WriteLine($"  Project ID {projectId} marked as completed.");
+            GenerateInvoice(project);
+        }
+        else
+        {
+            Console.WriteLine($"  Project ID {projectId} not found.");
+        }
+    }
+
+    private void GenerateInvoice(Project project)
+    {
+        double price = project.Budget; // Use the project's budget
+        string date = DateTime.Now.ToString("MM-dd-yyyy");
+
+        BillingSystem.Billing billing = new BillingSystem.Billing(project.AssignedClient.Name, project.Name, price, date);
+        billing.GenerateInvoice();
+    }
+
+    // Display Reports
+    public void DisplayReports()
+    {
+        Console.WriteLine("\n  --- Active Projects ---");
+        foreach (var project in Projects)
+        {
+            project.DisplayInfo();
+        }
+
+        Console.WriteLine("\n  --- Employees ---");
+        foreach (var employee in Employees)
+        {
+            employee.DisplayInfo();
+        }
+
+        Console.WriteLine("\n  --- Clients ---");
+        foreach (var client in Clients)
+        {
+            client.DisplayInfo();
+        }
+
+        Console.WriteLine("\n  --- Revenue Summary ---");
+        double totalRevenue = 0;
+        foreach (var project in Projects)
+        {
+            if (project.IsCompleted)
+            {
+                totalRevenue += project.Budget; // Sum up dynamic budgets
+            }
+        }
+        Console.WriteLine($"  Total Revenue from Completed Projects: ${totalRevenue}");
+    }
+
+    // Helper method to get a client by ID
+    public Client GetClientById(int clientId)
+    {
+        return Clients.Find(c => c.Id == clientId);
+    }
+}
+
+#endregion
+
+#region Main Program
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        SoftwareFarm softwareFarm = new SoftwareFarm();
+
+        // Menu-Driven System
+        while (true)
+        {
+            Console.WriteLine("  |-----------------------------------------------|");
+            Console.WriteLine("  |                 Welcome to Our                |");
+            Console.WriteLine("  |        Software Farm Management System        |");
+            Console.WriteLine("  |-----------------------------------------------|");
+            Console.WriteLine("  |---           1. Add Client                 ---|");       
+            Console.WriteLine("  |---           2. Add Employee               ---|");
+            Console.WriteLine("  |---           3. Add Project                ---|");
+            Console.WriteLine("  |---           4. Edit Client                ---|");
+            Console.WriteLine("  |---           5. Edit Employee              ---|");
+            Console.WriteLine("  |---           6. Edit Project               ---|");
+            Console.WriteLine("  |---           7. Remove Client              ---|");
+            Console.WriteLine("  |---           8. Remove Employee            ---|");
+            Console.WriteLine("  |---           9. Remove Project             ---|");
+            Console.WriteLine("  |---          10. Mark Project as Completed  ---|");
+            Console.WriteLine("  |---          11. Display Reports            ---|");
+            Console.WriteLine("  |---          12. Exit                       ---|");
+            Console.WriteLine("  |-----------------------------------------------|");
+            Console.Write("  Enter your choice: ");
+            int choice = Convert.ToInt32(Console.ReadLine());
+
+            switch (choice)
+            
+            {
+                case 1:
+                    Console.Write("  Enter Client ID: ");
+                    int clientId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter Client Name: ");
+                    string clientName = Console.ReadLine();
+                    Console.Write("  Enter Client Contact Info: ");
+                    string contactInfo = Console.ReadLine();
+                    softwareFarm.AddClient(new Client(clientId, clientName, contactInfo));
+                    break;
+
+                case 2:
+                    Console.Write("  Enter Employee ID: ");
+                    int empId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter Employee Name: ");
+                    string empName = Console.ReadLine();
+                    Console.Write("  Enter Employee Role: ");
+                    string empRole = Console.ReadLine();
+                    softwareFarm.AddEmployee(new Employee(empId, empName, empRole));
+                    break;
+
+                case 3:
+                    Console.Write("  Enter Project ID: ");
+                    int projId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter Project Name: ");
+                    string projName = Console.ReadLine();
+                    Console.Write("  Enter Project Deadline: ");
+                    string deadline = Console.ReadLine();
+                    Console.Write("  Enter Assigned Client ID: ");
+                    int assignedClientId = Convert.ToInt32(Console.ReadLine());
+                    Client assignedClient = softwareFarm.GetClientById(assignedClientId);
+                    if (assignedClient == null)
+                    {
+                        Console.WriteLine("  Client not found.");
+                        break;
+                    }
+                    Console.Write("  Enter Project Budget: ");
+                    double budget = Convert.ToDouble(Console.ReadLine());
+                    softwareFarm.AddProject(new Project(projId, projName, deadline, assignedClient, budget));
+                    break;
+
+                case 4:
+                    Console.Write("  Enter Client ID to Edit: ");
+                    int editClientId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter New Client Name: ");
+                    string newClientName = Console.ReadLine();
+                    Console.Write("  Enter New Client Contact Info: ");
+                    string newContactInfo = Console.ReadLine();
+                    softwareFarm.EditClient(editClientId, newClientName, newContactInfo);
+                    break;
+
+                case 5:
+                    Console.Write("  Enter Employee ID to Edit: ");
+                    int editEmpId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter New Employee Name: ");
+                    string newEmpName = Console.ReadLine();
+                    Console.Write("  Enter New Employee Role: ");
+                    string newEmpRole = Console.ReadLine();
+                    softwareFarm.EditEmployee(editEmpId, newEmpName, newEmpRole);
+                    break;
+
+                case 6:
+                    Console.Write("  Enter Project ID to Edit: ");
+                    int editProjId = Convert.ToInt32(Console.ReadLine());
+                    Console.Write("  Enter New Project Name: ");
+                    string newProjName = Console.ReadLine();
+                    Console.Write("  Enter New Project Deadline: ");
+                    string newDeadline = Console.ReadLine();
+                    Console.Write("  Enter New Client ID: ");
+                    int newClientId = Convert.ToInt32(Console.ReadLine());
+                    Client newClient = softwareFarm.GetClientById(newClientId);
+                    Console.Write("  Enter New Project Budget: ");
+                    double newBudget = Convert.ToDouble(Console.ReadLine());
+                    softwareFarm.EditProject(editProjId, newProjName, newDeadline, newClient, newBudget);
+                    break;
+
+                case 7:
+                    Console.Write("  Enter Client ID to Remove: ");
+                    int removeClientId = Convert.ToInt32(Console.ReadLine());
+                    softwareFarm.RemoveClient(removeClientId);
+                    break;
+
+                case 8:
+                    Console.Write("  Enter Employee ID to Remove: ");
+                    int removeEmpId = Convert.ToInt32(Console.ReadLine());
+                    softwareFarm.RemoveEmployee(removeEmpId);
+                    break;
+
+                case 9:
+                    Console.Write("  Enter Project ID to Remove: ");
+                    int removeProjId = Convert.ToInt32(Console.ReadLine());
+                    softwareFarm.RemoveProject(removeProjId);
+                    break;
+
+                case 10:
+                    Console.Write("  Enter Project ID to Mark as Completed: ");
+                    int completeProjId = Convert.ToInt32(Console.ReadLine());
+                    softwareFarm.MarkProjectAsCompleted(completeProjId);
+                    break;
+
+                case 11:
+                    softwareFarm.DisplayReports();
+                    break;
+
+                case 12:
+                    Console.WriteLine("  Exiting...");
+                    return;
+
+                default:
+                    Console.WriteLine("  Invalid option. Please try again.");
+                    break;
+            }
+        }
+    }
+}
+#endregion
